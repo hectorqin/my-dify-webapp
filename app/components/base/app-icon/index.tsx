@@ -13,6 +13,7 @@ export interface AppIconProps {
 const AppIcon: FC<AppIconProps> = ({
   size = 'medium',
   rounded = false,
+  icon,
   background,
   className,
 }) => {
@@ -28,7 +29,14 @@ const AppIcon: FC<AppIconProps> = ({
         background,
       }}
     >
-      🤖
+      {icon === 'robot-face'
+        ? (
+          <span className='ai-robot-face'>
+            <span></span>
+            <span></span>
+          </span>
+        )
+        : '🤖'}
     </span>
   )
 }

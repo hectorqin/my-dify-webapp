@@ -22,13 +22,13 @@ const Button: FC<IButtonProps> = ({
   let style = 'cursor-pointer'
   switch (type) {
     case 'link':
-      style = disabled ? 'border-solid border border-gray-200 bg-gray-200 cursor-not-allowed text-gray-800' : 'border-solid border border-gray-200 cursor-pointer text-blue-600 bg-white hover:shadow-sm hover:border-gray-300'
+      style = disabled ? 'border-solid border border-white/10 bg-white/5 cursor-not-allowed text-[#fff7ef]/40' : 'border-solid border border-white/10 cursor-pointer text-[#fff7ef] bg-[rgba(255,247,239,0.08)] hover:bg-[rgba(255,247,239,0.14)] hover:border-white/20'
       break
     case 'primary':
-      style = (disabled || loading) ? 'bg-primary-600/75 cursor-not-allowed text-white' : 'bg-primary-600 hover:bg-primary-600/75 hover:shadow-md cursor-pointer text-white hover:shadow-sm'
+      style = (disabled || loading) ? 'bg-orange-700/70 cursor-not-allowed text-white' : 'bg-gradient-to-br from-[#f8b800] via-[#f07800] to-[#e83008] cursor-pointer text-white hover:shadow-md'
       break
     default:
-      style = disabled ? 'border-solid border border-gray-200 bg-gray-200 cursor-not-allowed text-gray-800' : 'border-solid border border-gray-200 cursor-pointer text-gray-500 hover:bg-white hover:shadow-sm hover:border-gray-300'
+      style = disabled ? 'border-solid border border-white/10 bg-white/5 cursor-not-allowed text-[#fff7ef]/40' : 'border-solid border border-white/10 cursor-pointer text-[#fff7ef]/70 hover:bg-[rgba(255,247,239,0.1)] hover:text-[#fff7ef] hover:border-white/20'
       break
   }
 

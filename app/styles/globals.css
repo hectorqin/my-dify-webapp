@@ -83,6 +83,7 @@ body {
 
 body {
   color: rgb(var(--foreground-rgb));
+  background: linear-gradient(145deg, rgba(48, 44, 41, 0.92), rgba(26, 24, 22, 0.94)), rgba(24, 22, 20, 0.94);
   /* background: linear-gradient(
       to bottom,
       transparent,
@@ -127,4 +128,83 @@ a {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-fill-color: transparent;
+}
+
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #fff7efdb transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #fff7efdb;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-corner {
+  width: 0;
+  height: 0;
+  display: none;
+  background: transparent;
+}
+.ai-chat-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.ai-chat-title strong {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.ai-chat-title span {
+  color: #fff7efa3;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14px;
+}
+
+.ai-chat-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  flex: 0 0 40px !important;
+  display: inline-grid !important;
+  place-items: center;
+  border-radius: 14px !important;
+  background: radial-gradient(circle at 30% 18%, rgba(255, 240, 168, .72), transparent 42%), linear-gradient(145deg, #f8b800, #f07800 28%, #e85000 62%, #e83008) !important;
+  box-shadow: 0 12px 28px #e850004d;
+}
+
+.ai-robot-face {
+  width: 24px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 2px solid rgba(255, 255, 255, .92);
+  border-radius: 9px;
+}
+
+.ai-robot-face span {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .92);
 }

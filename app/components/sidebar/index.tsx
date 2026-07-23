@@ -32,7 +32,7 @@ const Sidebar: FC<ISidebarProps> = ({
   const { t } = useTranslation()
   return (
     <div
-      className="shrink-0 flex flex-col overflow-y-auto bg-white pc:w-[244px] tablet:w-[192px] mobile:w-[240px]  border-r border-gray-200 tablet:h-[calc(100vh_-_3rem)] mobile:h-screen"
+      className="shrink-0 flex flex-col overflow-y-auto bg-[rgba(24,22,20,0.76)] pc:w-[244px] tablet:w-[192px] mobile:w-[240px]  border-r border-white/10 tablet:h-full mobile:h-screen"
     >
       {list.length < MAX_CONVERSATION_LENTH && (
         <div className="flex flex-shrink-0 p-4 !pb-0">
@@ -45,7 +45,7 @@ const Sidebar: FC<ISidebarProps> = ({
         </div>
       )}
 
-      <nav className="mt-4 flex-1 space-y-1 bg-white p-4 !pt-0">
+      <nav className="mt-4 flex-1 space-y-1 bg-transparent p-4 !pt-0">
         {list.map((item) => {
           const isCurrent = item.id === currentId
           const ItemIcon
@@ -56,16 +56,16 @@ const Sidebar: FC<ISidebarProps> = ({
               key={item.id}
               className={classNames(
                 isCurrent
-                  ? 'bg-primary-50 text-primary-600'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-700',
+                  ? 'bg-[rgba(255,247,239,0.12)] text-[#fff7ef]'
+                  : 'text-[#fff7ef]/70 hover:bg-[rgba(255,247,239,0.08)] hover:text-[#fff7ef]',
                 'group flex items-center rounded-md px-2 py-2 text-sm font-medium cursor-pointer',
               )}
             >
               <ItemIcon
                 className={classNames(
                   isCurrent
-                    ? 'text-primary-600'
-                    : 'text-gray-400 group-hover:text-gray-500',
+                    ? 'text-[#fff7ef]'
+                    : 'text-[#fff7ef]/45 group-hover:text-[#fff7ef]/70',
                   'mr-3 h-5 w-5 flex-shrink-0',
                 )}
                 aria-hidden="true"
@@ -79,7 +79,7 @@ const Sidebar: FC<ISidebarProps> = ({
         <Card><div className="flex flex-row items-center"><ChatBubbleOvalLeftEllipsisSolidIcon className="text-primary-600 h-6 w-6 mr-2" /><span>LangGenius</span></div></Card>
       </a> */}
       <div className="flex flex-shrink-0 pr-4 pb-4 pl-4">
-        <div className="text-gray-400 font-normal text-xs">© {copyRight} {(new Date()).getFullYear()}</div>
+        <div className="text-[#fff7ef]/45 font-normal text-xs">© {copyRight} {(new Date()).getFullYear()}</div>
       </div>
     </div>
   )

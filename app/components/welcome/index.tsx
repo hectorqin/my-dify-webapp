@@ -69,7 +69,7 @@ const Welcome: FC<IWelcomeProps> = ({
   const highLightPromoptTemplate = (() => {
     if (!promptConfig) { return '' }
     const res = promptConfig.prompt_template.replace(regex, (match, p1) => {
-      return `<span class='text-gray-800 font-bold'>${inputs?.[p1] ? inputs?.[p1] : match}</span>`
+      return `<span class='text-[#fff7ef] font-bold'>${inputs?.[p1] ? inputs?.[p1] : match}</span>`
     })
     return res
   })()
@@ -81,8 +81,8 @@ const Welcome: FC<IWelcomeProps> = ({
 
   const renderHeader = () => {
     return (
-      <div className='absolute top-0 left-0 right-0 flex items-center justify-between border-b border-gray-100 mobile:h-12 tablet:h-16 px-8 bg-white'>
-        <div className='text-gray-900'>{conversationName}</div>
+      <div className='absolute top-0 left-0 right-0 flex items-center justify-between border-b border-white/10 mobile:h-12 tablet:h-16 px-8 bg-transparent'>
+        <div className='text-[#fff7ef]'>{conversationName}</div>
       </div>
     )
   }
@@ -92,7 +92,7 @@ const Welcome: FC<IWelcomeProps> = ({
       <div className='space-y-3'>
         {promptConfig.prompt_variables.map(item => (
           <div className='tablet:flex items-start mobile:space-y-2 tablet:space-y-0 mobile:text-xs tablet:text-sm' key={item.key}>
-            <label className={`flex-shrink-0 flex items-center tablet:leading-9 mobile:text-gray-700 tablet:text-gray-900 mobile:font-medium pc:font-normal ${s.formLabel}`}>{item.name}</label>
+            <label className={`flex-shrink-0 flex items-center tablet:leading-9 mobile:text-[#fff7ef]/70 tablet:text-[#fff7ef]/85 mobile:font-medium pc:font-normal ${s.formLabel}`}>{item.name}</label>
             {item.type === 'select'
               && (
                 <Select
@@ -101,7 +101,7 @@ const Welcome: FC<IWelcomeProps> = ({
                   onSelect={(i) => { setInputs({ ...inputs, [item.key]: i.value }) }}
                   items={(item.options || []).map(i => ({ name: i, value: i }))}
                   allowSearch={false}
-                  bgClassName='bg-gray-50'
+                  bgClassName='bg-[rgba(255,247,239,0.08)]'
                 />
               )}
             {item.type === 'string' && (
@@ -109,13 +109,13 @@ const Welcome: FC<IWelcomeProps> = ({
                 placeholder={`${item.name}${!item.required ? `(${t('app.variableTable.optional')})` : ''}`}
                 value={inputs?.[item.key] || ''}
                 onChange={(e) => { setInputs({ ...inputs, [item.key]: e.target.value }) }}
-                className={'w-full flex-grow py-2 pl-3 pr-3 box-border rounded-lg bg-gray-50'}
+                className={'w-full flex-grow py-2 pl-3 pr-3 box-border rounded-lg bg-[rgba(255,247,239,0.08)] border border-white/10 text-[#fff7ef] placeholder:text-[#fff7ef]/40 outline-none'}
                 maxLength={item.max_length || DEFAULT_VALUE_MAX_LEN}
               />
             )}
             {item.type === 'paragraph' && (
               <textarea
-                className="w-full h-[104px] flex-grow py-2 pl-3 pr-3 box-border rounded-lg bg-gray-50"
+                className="w-full h-[104px] flex-grow py-2 pl-3 pr-3 box-border rounded-lg bg-[rgba(255,247,239,0.08)] border border-white/10 text-[#fff7ef] placeholder:text-[#fff7ef]/40 outline-none"
                 placeholder={`${item.name}${!item.required ? `(${t('app.variableTable.optional')})` : ''}`}
                 value={inputs?.[item.key] || ''}
                 onChange={(e) => { setInputs({ ...inputs, [item.key]: e.target.value }) }}
@@ -124,7 +124,7 @@ const Welcome: FC<IWelcomeProps> = ({
             {item.type === 'number' && (
               <input
                 type="number"
-                className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500 "
+                className="block w-full p-2 text-[#fff7ef] border border-white/10 rounded-lg bg-[rgba(255,247,239,0.08)] sm:text-xs focus:ring-orange-500 focus:border-orange-500 outline-none placeholder:text-[#fff7ef]/40"
                 placeholder={`${item.name}${!item.required ? `(${t('appDebug.variableTable.optional')})` : ''}`}
                 value={inputs[item.key]}
                 onChange={(e) => { onInputsChange({ ...inputs, [item.key]: e.target.value }) }}
@@ -302,8 +302,8 @@ const Welcome: FC<IWelcomeProps> = ({
             />
             <PromptTemplate html={highLightPromoptTemplate} />
             {isFold && (
-              <div className='flex items-center justify-between mt-3 border-t border-indigo-100 pt-4 text-xs text-indigo-600'>
-                <span className='text-gray-700'>{t('app.chat.configStatusDes')}</span>
+              <div className='flex items-center justify-between mt-3 border-t border-white/10 pt-4 text-xs text-[#fff7ef]/70'>
+                <span className='text-[#fff7ef]/70'>{t('app.chat.configStatusDes')}</span>
                 <EditBtn onClick={() => setIsFold(false)} />
               </div>
             )}
@@ -374,12 +374,12 @@ const Welcome: FC<IWelcomeProps> = ({
 
         {/* foot */}
         {!hasSetInputs && (
-          <div className='mt-4 flex justify-between items-center h-8 text-xs text-gray-400'>
+          <div className='mt-4 flex justify-between items-center h-8 text-xs text-[#fff7ef]/45'>
 
             {siteInfo.privacy_policy
               ? <div>{t('app.chat.privacyPolicyLeft')}
                 <a
-                  className='text-gray-500'
+                  className='text-[#fff7ef]/60'
                   href={siteInfo.privacy_policy}
                   target='_blank'
                 >{t('app.chat.privacyPolicyMiddle')}</a>
