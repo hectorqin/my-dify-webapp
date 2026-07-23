@@ -185,6 +185,14 @@ const Main: FC<IMainProps> = () => {
       }, 50)
     }
   }, [chatList, currConversationId])
+  useEffect(() => {
+    if (window.location.search.indexOf('quickNew=true') > 0) {
+      handleStartChat({})
+      setTimeout(() => {
+        handleConversationIdChange('-1')
+      }, 300)
+    }
+  }, [])
   // user can not edit inputs if user had send message
   const canEditInputs = !chatList.some(item => item.isAnswer === false) && isNewConversation
   const createNewChat = () => {
