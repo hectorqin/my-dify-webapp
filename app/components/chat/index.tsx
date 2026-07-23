@@ -63,27 +63,10 @@ const Chat: FC<IChatProps> = ({
   const queryRef = useRef('')
   const chatListRef = useRef<HTMLDivElement>(null)
 
-  const normalizeQuery = (value: string) => value.replace(/[\r\n]+/g, ' ')
-
-  const setNormalizedQuery = (value: string) => {
-    const normalizedValue = normalizeQuery(value)
-    setQuery(normalizedValue)
-    queryRef.current = normalizedValue
-  }
-
   const handleContentChange = (e: any) => {
-    setNormalizedQuery(e.target.value)
-  }
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const pastedText = e.clipboardData.getData('text')
-    if (!/[\r\n]/.test(pastedText)) { return }
-
-    e.preventDefault()
-    const target = e.currentTarget
-    const start = target.selectionStart ?? query.length
-    const end = target.selectionEnd ?? query.length
-    setNormalizedQuery(`${query.slice(0, start)}${pastedText}${query.slice(end)}`)
+    const value = e.target.value
+    setQuery(value)
+    queryRef.current = value
   }
 
   const logError = (message: string) => {
@@ -142,10 +125,7 @@ const Chat: FC<IChatProps> = ({
     }))
     const docAndOtherFiles: VisionFile[] = getProcessedFiles(attachmentFiles)
     const combinedFiles: VisionFile[] = [...imageFiles, ...docAndOtherFiles]
-    const message = normalizeQuery(queryRef.current)
-    queryRef.current = message
-    setQuery(message)
-    onSend(message, combinedFiles)
+    onSend(queryRef.current, combinedFiles)
     if (!files.find(item => item.type === TransferMethod.local_file && !item.fileId)) {
       if (files.length) { onClear() }
       if (!isResponding) {
@@ -166,9 +146,11 @@ const Chat: FC<IChatProps> = ({
 
   const handleKeyDown = (e: any) => {
     isUseInputMethod.current = e.nativeEvent.isComposing
-    if (e.code === 'Enter') {
+    if (e.code === 'Enter' && !e.shiftKey) {
+      const result = query.replace(/\n$/, '')
+      setQuery(result)
+      queryRef.current = result
       e.preventDefault()
-      setNormalizedQuery(query)
     }
   }
 
@@ -201,9 +183,6 @@ const Chat: FC<IChatProps> = ({
 
     return () => resizeObserver.disconnect()
   }, [chatList, isResponding, scrollChatToBottom])
-
-  const canSend = query.trim().length > 0
-
   const suggestionClick = (suggestion: string) => {
     setQuery(suggestion)
     queryRef.current = suggestion
@@ -289,7 +268,6 @@ const Chat: FC<IChatProps> = ({
                   onChange={handleContentChange}
                   onKeyUp={handleKeyUp}
                   onKeyDown={handleKeyDown}
-                  onPaste={handlePaste}
                   rows={1}
                   wrap='off'
                   autoSize={false}
@@ -304,7 +282,7 @@ const Chat: FC<IChatProps> = ({
                   </div>
                 }
               >
-                <div className={cn(s.sendBtn, !canSend && s.sendBtnDisabled, 'w-11 h-11 shrink-0')} aria-disabled={!canSend} onClick={canSend ? handleSend : undefined}></div>
+                <div className={cn(s.sendBtn, 'w-11 h-11 shrink-0')} onClick={handleSend}></div>
               </Tooltip>
             </div>
           </div>

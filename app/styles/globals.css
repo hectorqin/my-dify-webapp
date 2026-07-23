@@ -157,27 +157,16 @@ a {
   display: none;
   background: transparent;
 }
-.ai-chat-title {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1px;
-  min-width: 0;
-  line-height: 1.1;
-}
-
-.ai-chat-title strong {
+.ai-chat-title-main {
   color: #fff;
   font-size: 16px;
   font-weight: 700;
-  line-height: 18px;
 }
 
-.ai-chat-title span {
+.ai-chat-title-sub {
   color: #fff7efa3;
   font-size: 12px;
   font-weight: 400;
-  line-height: 14px;
 }
 
 .ai-chat-avatar {

@@ -163,6 +163,8 @@ const handleStream = (
     let hasError = false
     reader?.read().then((result: any) => {
       if (result.done) {
+        debugger
+        console.log("done")
         onCompleted && onCompleted()
         return
       }

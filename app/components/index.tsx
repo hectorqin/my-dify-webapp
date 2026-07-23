@@ -308,6 +308,10 @@ const Main: FC<IMainProps> = () => {
   const logError = (message: string) => {
     notify({ type: 'error', message })
   }
+  const finishResponding = () => {
+    setRespondingFalse()
+    setAbortController(null)
+  }
 
   const checkCanSend = () => {
     if (currConversationId !== '-1') { return true }
@@ -470,22 +474,26 @@ const Main: FC<IMainProps> = () => {
         })
       },
       async onCompleted(hasError?: boolean) {
-        if (hasError) { return }
+        try {
+          if (hasError) { return }
 
-        if (getConversationIdChangeBecauseOfNew()) {
-          const { data: allConversations }: any = await fetchConversations()
-          const newItem: any = await generationConversationName(allConversations[0].id)
+          if (getConversationIdChangeBecauseOfNew()) {
+            const { data: allConversations }: any = await fetchConversations()
+            const newItem: any = await generationConversationName(allConversations[0].id)
 
-          const newAllConversations = produce(allConversations, (draft: any) => {
-            draft[0].name = newItem.name
-          })
-          setConversationList(newAllConversations as any)
+            const newAllConversations = produce(allConversations, (draft: any) => {
+              draft[0].name = newItem.name
+            })
+            setConversationList(newAllConversations as any)
+          }
+          setConversationIdChangeBecauseOfNew(false)
+          resetNewConversationInputs()
+          setChatNotStarted()
+          setCurrConversationId(tempNewConversationId, APP_ID, true)
         }
-        setConversationIdChangeBecauseOfNew(false)
-        resetNewConversationInputs()
-        setChatNotStarted()
-        setCurrConversationId(tempNewConversationId, APP_ID, true)
-        setRespondingFalse()
+        finally {
+          finishResponding()
+        }
       },
       onFile(file) {
         const lastThought = responseItem.agent_thoughts?.[responseItem.agent_thoughts?.length - 1]
@@ -552,6 +560,7 @@ const Main: FC<IMainProps> = () => {
             },
           )
           setChatList(newListWithAnswer)
+          finishResponding()
           return
         }
         // not support show citation
@@ -565,6 +574,7 @@ const Main: FC<IMainProps> = () => {
           },
         )
         setChatList(newListWithAnswer)
+        finishResponding()
       },
       onMessageReplace: (messageReplace) => {
         setChatList(produce(
@@ -577,7 +587,7 @@ const Main: FC<IMainProps> = () => {
         ))
       },
       onError() {
-        setRespondingFalse()
+        finishResponding()
         // role back placeholder answer
         setChatList(produce(getChatList(), (draft) => {
           draft.splice(draft.findIndex(item => item.id === placeholderAnswerId), 1)
@@ -667,6 +677,7 @@ const Main: FC<IMainProps> = () => {
     <div className='h-full flex flex-col overflow-hidden text-[#fff7ef]' style={{ background: 'linear-gradient(145deg, rgba(48, 44, 41, 0.92), rgba(26, 24, 22, 0.94)), rgba(24, 22, 20, 0.94)' }}>
       <Header
         title={APP_INFO.title}
+        subtitle={APP_INFO.description}
         isMobile={isMobile}
         onShowSideBar={showSidebar}
         onCreateNewChat={() => handleConversationIdChange('-1')}

@@ -189,17 +189,9 @@ const Answer: FC<IAnswerProps> = ({
   return (
     <div key={id}>
       <div className="flex items-start">
-        <div className={`${s.answerIcon} w-10 h-10 shrink-0`}>
-          {isResponding
-            && (
-              <div className={s.typeingIcon}>
-                <LoadingAnim type="avatar" />
-              </div>
-            )}
-        </div>
-        <div className={`${s.answerWrap} max-w-[calc(100%-3rem)]`}>
+        <div className={s.answerWrap}>
           <div className={`${s.answer} relative text-sm text-gray-900`}>
-            <div className={`ml-2 py-3 px-4 bg-gray-100 rounded-tr-2xl rounded-b-2xl ${workflowProcess && 'min-w-[480px]'}`}>
+            <div className={`${s.bubble} ${s.answerBubble} ${workflowProcess ? s.answerWorkflowBubble : ''}`}>
               {workflowProcess && (
                 <WorkflowProcess data={workflowProcess} hideInfo />
               )}
@@ -224,18 +216,19 @@ const Answer: FC<IAnswerProps> = ({
                   <div className="flex gap-1 mt-1 flex-wrap">
                     {suggestedQuestions.map((suggestion, index) => (
                       <div key={index} className="flex items-center gap-1">
-                        <Button className="text-sm" type="link" onClick={() => suggestionClick(suggestion)}>{suggestion}</Button>
+                        <Button className={s.suggestionButton} type="link" onClick={() => suggestionClick(suggestion)}>{suggestion}</Button>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
             </div>
+            {/*
             <div className="absolute top-[-14px] right-[-14px] flex flex-row justify-end gap-1">
               {!feedbackDisabled && !item.feedbackDisabled && renderItemOperation()}
-              {/* User feedback must be displayed */}
               {!feedbackDisabled && renderFeedbackRating(feedback?.rating)}
             </div>
+            */}
           </div>
         </div>
       </div>
