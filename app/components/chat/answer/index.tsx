@@ -6,6 +6,7 @@ import type { Emoji } from '@/types/tools'
 import { HandThumbDownIcon, HandThumbUpIcon } from '@heroicons/react/24/outline'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import type { DodexActionItem, DodexFunctionCall } from '@/app/components/base/dodex-actions'
 import Button from '@/app/components/base/button'
 import StreamdownMarkdown from '@/app/components/base/streamdown-markdown'
 import Tooltip from '@/app/components/base/tooltip'
@@ -70,6 +71,8 @@ interface IAnswerProps {
   isResponding?: boolean
   allToolIcons?: Record<string, string | Emoji>
   suggestionClick?: (suggestion: string) => void
+  onDodexSendMessage?: (message: string) => void
+  onDodexExecuteFunction?: (functionCall: DodexFunctionCall, item: DodexActionItem) => boolean | void
 }
 
 // The component needs to maintain its own state to control whether to display input component
@@ -80,6 +83,8 @@ const Answer: FC<IAnswerProps> = ({
   isResponding,
   allToolIcons,
   suggestionClick = () => { },
+  onDodexSendMessage,
+  onDodexExecuteFunction,
 }) => {
   const { id, content, feedback, agent_thoughts, workflowProcess, suggestedQuestions = [] } = item
   const isAgentMode = !!agent_thoughts && agent_thoughts.length > 0
@@ -156,7 +161,12 @@ const Answer: FC<IAnswerProps> = ({
       {agent_thoughts?.map((item, index) => (
         <div key={index}>
           {item.thought && (
-            <StreamdownMarkdown content={item.thought} />
+            <StreamdownMarkdown
+              content={item.thought}
+              actionContextId={`${id}:thought:${index}`}
+              onSendMessage={onDodexSendMessage}
+              onExecuteFunction={onDodexExecuteFunction}
+            />
           )}
           {/* {item.tool} */}
           {/* perhaps not use tool */}
@@ -202,7 +212,12 @@ const Answer: FC<IAnswerProps> = ({
                 : (isAgentMode
                   ? agentModeAnswer
                   : (
-                    <StreamdownMarkdown content={content} />
+                    <StreamdownMarkdown
+                      content={content}
+                      actionContextId={id}
+                      onSendMessage={onDodexSendMessage}
+                      onExecuteFunction={onDodexExecuteFunction}
+                    />
                   ))}
               {suggestedQuestions.length > 0 && (
                 <div className="mt-3">

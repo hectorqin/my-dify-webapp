@@ -18,6 +18,7 @@ import { useImageFiles } from '@/app/components/base/image-uploader/hooks'
 import FileUploaderInAttachmentWrapper from '@/app/components/base/file-uploader-in-attachment'
 import type { FileEntity, FileUpload } from '@/app/components/base/file-uploader-in-attachment/types'
 import { getProcessedFiles } from '@/app/components/base/file-uploader-in-attachment/utils'
+import type { DodexActionItem, DodexFunctionCall } from '@/app/components/base/dodex-actions'
 
 export interface IChatProps {
   chatList: ChatItem[]
@@ -32,6 +33,7 @@ export interface IChatProps {
   onFeedback?: FeedbackFunc
   checkCanSend?: () => boolean
   onSend?: (message: string, files: VisionFile[]) => void
+  onDodexExecuteFunction?: (functionCall: DodexFunctionCall, item: DodexActionItem) => boolean | void
   useCurrentUserAvatar?: boolean
   isResponding?: boolean
   controlClearQuery?: number
@@ -46,6 +48,7 @@ const Chat: FC<IChatProps> = ({
   onFeedback,
   checkCanSend,
   onSend = () => { },
+  onDodexExecuteFunction,
   useCurrentUserAvatar,
   isResponding,
   controlClearQuery,
@@ -76,6 +79,15 @@ const Chat: FC<IChatProps> = ({
       return false
     }
     return true
+  }
+
+  const sendPlainMessage = (message: string) => {
+    if (!message || message.trim() === '') {
+      logError(t('app.errorMessage.valueOfVarRequired'))
+      return
+    }
+    if (checkCanSend && !checkCanSend()) { return }
+    onSend(message, [])
   }
 
   useEffect(() => {
@@ -161,6 +173,8 @@ const Chat: FC<IChatProps> = ({
               onFeedback={onFeedback}
               isResponding={isResponding && isLast}
               suggestionClick={suggestionClick}
+              onDodexSendMessage={sendPlainMessage}
+              onDodexExecuteFunction={onDodexExecuteFunction}
             />
           }
           return (

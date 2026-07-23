@@ -22,6 +22,7 @@ import AppUnavailable from '@/app/components/app-unavailable'
 import { API_KEY, APP_ID, APP_INFO, isShowPrompt, promptTemplate } from '@/config'
 import type { Annotation as AnnotationType } from '@/types/log'
 import { addFileInfos, sortAgentSorts } from '@/utils/tools'
+import { formatWelcomeMessageFromParameters } from '@/utils/dify-parameters'
 
 export interface IMainProps {
   params: any
@@ -242,17 +243,26 @@ const Main: FC<IMainProps> = () => {
 
         // fetch new conversation info
         const { user_input_form, opening_statement: introduction, file_upload, system_parameters, suggested_questions = [] }: any = appParams
+        const welcomeMessage = formatWelcomeMessageFromParameters({
+          opening_statement: introduction,
+          suggested_questions,
+        }, APP_INFO.default_language)
+        const normalizedConversations = conversations.map(item => ({
+          ...item,
+          introduction: welcomeMessage,
+          suggested_questions: [],
+        }))
         setLocaleOnClient(APP_INFO.default_language, true)
         setNewConversationInfo({
           name: t('app.chat.newChatDefaultName'),
-          introduction,
-          suggested_questions,
+          introduction: welcomeMessage,
+          suggested_questions: [],
         })
         if (isNotNewConversation) {
           setExistConversationInfo({
             name: currentConversation.name || t('app.chat.newChatDefaultName'),
-            introduction,
-            suggested_questions,
+            introduction: welcomeMessage,
+            suggested_questions: [],
           })
         }
         const prompt_variables = userInputsFormToPromptVariables(user_input_form)
@@ -274,7 +284,7 @@ const Main: FC<IMainProps> = () => {
           number_limits: file_upload?.number_limits,
           fileUploadConfig: file_upload?.fileUploadConfig,
         })
-        setConversationList(conversations as ConversationItem[])
+        setConversationList(normalizedConversations as ConversationItem[])
 
         if (isNotNewConversation) { setCurrConversationId(_conversationId, APP_ID, false) }
 
@@ -306,8 +316,9 @@ const Main: FC<IMainProps> = () => {
 
     let emptyRequiredInput = false
     promptConfig.prompt_variables.forEach((item) => {
-      if (item.required && !currInputs[item.key])
+      if (item.required && !currInputs[item.key]) {
         emptyRequiredInput = true
+      }
     })
 
     if (emptyRequiredInput) {
