@@ -28,6 +28,21 @@ export interface IMainProps {
   params: any
 }
 
+const getNewConversationItem = (
+  name: string,
+  inputs: Record<string, any> | null,
+  introduction: string,
+  suggestedQuestions: string[],
+): ConversationItem => ({
+  id: '-1',
+  name,
+  inputs,
+  introduction,
+  suggested_questions: suggestedQuestions,
+})
+
+const getEmptyInputs = (): Record<string, any> => ({})
+
 const Main: FC<IMainProps> = () => {
   const { t } = useTranslation()
   const media = useBreakpoints()
@@ -185,14 +200,6 @@ const Main: FC<IMainProps> = () => {
       }, 50)
     }
   }, [chatList, currConversationId])
-  useEffect(() => {
-    if (window.location.search.indexOf('quickNew=true') > 0) {
-      handleStartChat({})
-      setTimeout(() => {
-        handleConversationIdChange('-1')
-      }, 300)
-    }
-  }, [])
   // user can not edit inputs if user had send message
   const canEditInputs = !chatList.some(item => item.isAnswer === false) && isNewConversation
   const createNewChat = () => {
@@ -200,13 +207,7 @@ const Main: FC<IMainProps> = () => {
     if (conversationList.some(item => item.id === '-1')) { return }
 
     setConversationList(produce(conversationList, (draft) => {
-      draft.unshift({
-        id: '-1',
-        name: t('app.chat.newChatDefaultName'),
-        inputs: newConversationInputs,
-        introduction: conversationIntroduction,
-        suggested_questions: suggestedQuestions,
-      })
+      draft.unshift(getNewConversationItem(t('app.chat.newChatDefaultName'), newConversationInputs, conversationIntroduction, suggestedQuestions))
     }))
   }
 
@@ -292,9 +293,21 @@ const Main: FC<IMainProps> = () => {
           number_limits: file_upload?.number_limits,
           fileUploadConfig: file_upload?.fileUploadConfig,
         })
-        setConversationList(normalizedConversations as ConversationItem[])
+        const shouldQuickNew = new URLSearchParams(window.location.search).get('quickNew') === 'true'
+        const quickNewInputs = getEmptyInputs()
+        setConversationList(shouldQuickNew
+          ? [getNewConversationItem(t('app.chat.newChatDefaultName'), quickNewInputs, welcomeMessage, []), ...(normalizedConversations as ConversationItem[])]
+          : normalizedConversations as ConversationItem[],
+        )
 
-        if (isNotNewConversation) { setCurrConversationId(_conversationId, APP_ID, false) }
+        if (shouldQuickNew) {
+          setConversationIdChangeBecauseOfNew(true)
+          setCurrInputs(quickNewInputs)
+          setChatStarted()
+          setChatList(generateNewChatListWithOpenStatement(welcomeMessage, quickNewInputs))
+          setCurrConversationId('-1', APP_ID, false)
+        }
+        else if (isNotNewConversation) { setCurrConversationId(_conversationId, APP_ID, false) }
 
         setInited(true)
       }
