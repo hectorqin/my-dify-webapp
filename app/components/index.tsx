@@ -399,7 +399,7 @@ const Main: FC<IMainProps> = () => {
   }
 
   const handleSend = async (message: string, files?: VisionFile[]) => {
-    if (isSendingRef.current || isResponding) {
+    if (isSendingRef.current) {
       notify({ type: 'info', message: t('app.errorMessage.waitForResponse') })
       return
     }
@@ -466,6 +466,12 @@ const Main: FC<IMainProps> = () => {
       isAnswer: true,
     }
     let hasSetResponseId = false
+    let hasFinishedResponding = false
+    const finishCurrentResponse = () => {
+      if (hasFinishedResponding) { return }
+      hasFinishedResponding = true
+      finishResponding()
+    }
 
     let respondingConversationId = requestConversationId
     let tempNewConversationId = ''
@@ -521,6 +527,7 @@ const Main: FC<IMainProps> = () => {
         })
       },
       async onCompleted(hasError?: boolean) {
+        finishCurrentResponse()
         try {
           if (hasError) { return }
 
@@ -546,7 +553,7 @@ const Main: FC<IMainProps> = () => {
           }
         }
         finally {
-          finishResponding()
+          finishCurrentResponse()
         }
       },
       onFile(file) {
@@ -642,7 +649,7 @@ const Main: FC<IMainProps> = () => {
         ))
       },
       onError() {
-        finishResponding()
+        finishCurrentResponse()
         // role back placeholder answer
         setChatList(produce(getChatList(), (draft) => {
           draft.splice(draft.findIndex(item => item.id === placeholderAnswerId), 1)
