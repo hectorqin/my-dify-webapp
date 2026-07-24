@@ -98,7 +98,8 @@ const Main: FC<IMainProps> = () => {
     setExistConversationInfo,
   } = useConversation()
 
-  const [conversationIdChangeBecauseOfNew, setConversationIdChangeBecauseOfNew, getConversationIdChangeBecauseOfNew] = useGetState(false)
+  const [conversationIdChangeBecauseOfNew, setConversationIdChangeBecauseOfNew] = useGetState(false)
+  const promotedConversationIdRef = useRef<string | null>(null)
   const [isChatStarted, { setTrue: setChatStarted, setFalse: setChatNotStarted }] = useBoolean(false)
   const handleStartChat = (inputs: Record<string, any>) => {
     createNewChat()
@@ -121,6 +122,9 @@ const Main: FC<IMainProps> = () => {
   const handleConversationSwitch = () => {
     if (!inited) { return }
 
+    const shouldKeepCurrentChat = promotedConversationIdRef.current === currConversationId
+    if (promotedConversationIdRef.current && !shouldKeepCurrentChat) { promotedConversationIdRef.current = null }
+
     // update inputs of current conversation
     let notSyncToStateIntroduction = ''
     let notSyncToStateInputs: Record<string, any> | undefined | null = {}
@@ -141,7 +145,7 @@ const Main: FC<IMainProps> = () => {
     }
 
     // update chat list of current conversation
-    if (!isNewConversation && !conversationIdChangeBecauseOfNew && !isResponding) {
+    if (!isNewConversation && !shouldKeepCurrentChat && !conversationIdChangeBecauseOfNew && !isResponding) {
       fetchChatList(currConversationId).then((res: any) => {
         const { data } = res
         const newChatList: ChatItem[] = generateNewChatListWithOpenStatement(notSyncToStateIntroduction, notSyncToStateInputs)
@@ -324,12 +328,14 @@ const Main: FC<IMainProps> = () => {
   }, [])
 
   const [isResponding, { setTrue: setRespondingTrue, setFalse: setRespondingFalse }] = useBoolean(false)
+  const isSendingRef = useRef(false)
   const [abortController, setAbortController] = useState<AbortController | null>(null)
   const { notify } = Toast
   const logError = (message: string) => {
     notify({ type: 'error', message })
   }
   const finishResponding = () => {
+    isSendingRef.current = false
     setRespondingFalse()
     setAbortController(null)
   }
@@ -393,10 +399,13 @@ const Main: FC<IMainProps> = () => {
   }
 
   const handleSend = async (message: string, files?: VisionFile[]) => {
-    if (isResponding) {
+    if (isSendingRef.current || isResponding) {
       notify({ type: 'info', message: t('app.errorMessage.waitForResponse') })
       return
     }
+    const requestConversationId = getCurrConversationId() || '-1'
+    const isCreatingNewConversation = requestConversationId === '-1'
+    const existingConversationIds = new Set(conversationList.filter(item => item.id !== '-1').map(item => item.id))
     const toServerInputs: Record<string, any> = {}
     if (currInputs) {
       Object.keys(currInputs).forEach((key) => {
@@ -412,7 +421,7 @@ const Main: FC<IMainProps> = () => {
     const data: Record<string, any> = {
       inputs: toServerInputs,
       query: message,
-      conversation_id: isNewConversation ? null : currConversationId,
+      conversation_id: isCreatingNewConversation ? null : requestConversationId,
     }
 
     if (files && files?.length > 0) {
@@ -458,9 +467,26 @@ const Main: FC<IMainProps> = () => {
     }
     let hasSetResponseId = false
 
-    const prevTempNewConversationId = getCurrConversationId() || '-1'
+    let respondingConversationId = requestConversationId
     let tempNewConversationId = ''
+    const syncResponseConversationId = (newConversationId?: string) => {
+      if (!newConversationId) { return }
 
+      tempNewConversationId = newConversationId
+      if (!isCreatingNewConversation || respondingConversationId !== '-1') { return }
+
+      respondingConversationId = newConversationId
+      if (getCurrConversationId() !== '-1') { return }
+
+      promotedConversationIdRef.current = newConversationId
+      setConversationList(currentList => produce(currentList, (draft) => {
+        const pendingConversation = draft.find(item => item.id === '-1')
+        if (pendingConversation) { pendingConversation.id = newConversationId }
+      }))
+      setCurrConversationId(newConversationId, APP_ID, true)
+    }
+
+    isSendingRef.current = true
     setRespondingTrue()
     sendChatMessage(data, {
       getAbortController: (abortController) => {
@@ -479,11 +505,11 @@ const Main: FC<IMainProps> = () => {
           hasSetResponseId = true
         }
 
-        if (isFirstMessage && newConversationId) { tempNewConversationId = newConversationId }
+        syncResponseConversationId(newConversationId)
 
         setMessageTaskId(taskId)
         // has switched to other conversation
-        if (prevTempNewConversationId !== getCurrConversationId()) {
+        if (respondingConversationId !== getCurrConversationId()) {
           setIsRespondingConCurrCon(false)
           return
         }
@@ -498,19 +524,26 @@ const Main: FC<IMainProps> = () => {
         try {
           if (hasError) { return }
 
-          if (getConversationIdChangeBecauseOfNew()) {
-            const { data: allConversations }: any = await fetchConversations()
-            const newItem: any = await generationConversationName(allConversations[0].id)
-
-            const newAllConversations = produce(allConversations, (draft: any) => {
-              draft[0].name = newItem.name
-            })
-            setConversationList(newAllConversations as any)
-          }
           setConversationIdChangeBecauseOfNew(false)
           resetNewConversationInputs()
           setChatNotStarted()
-          setCurrConversationId(tempNewConversationId, APP_ID, true)
+
+          if (isCreatingNewConversation) {
+            const { data: allConversations }: any = await fetchConversations()
+            const createdConversation = allConversations.find((item: ConversationItem) => item.id === tempNewConversationId)
+              || allConversations.find((item: ConversationItem) => !existingConversationIds.has(item.id))
+
+            if (!createdConversation) { return }
+
+            syncResponseConversationId(createdConversation.id)
+            const newItem: any = await generationConversationName(createdConversation.id)
+
+            const newAllConversations = produce(allConversations, (draft: any) => {
+              const createdItem = draft.find((item: ConversationItem) => item.id === createdConversation.id)
+              if (createdItem) { createdItem.name = newItem.name }
+            })
+            setConversationList(newAllConversations as any)
+          }
         }
         finally {
           finishResponding()
@@ -528,6 +561,7 @@ const Main: FC<IMainProps> = () => {
         })
       },
       onThought(thought) {
+        syncResponseConversationId(thought.conversation_id)
         isAgentMode = true
         const response = responseItem as any
         if (thought.message_id && !hasSetResponseId) {
@@ -551,7 +585,7 @@ const Main: FC<IMainProps> = () => {
           }
         }
         // has switched to other conversation
-        if (prevTempNewConversationId !== getCurrConversationId()) {
+        if (respondingConversationId !== getCurrConversationId()) {
           setIsRespondingConCurrCon(false)
           return false
         }
@@ -564,6 +598,7 @@ const Main: FC<IMainProps> = () => {
         })
       },
       onMessageEnd: (messageEnd) => {
+        syncResponseConversationId(messageEnd.conversation_id)
         if (messageEnd.metadata?.annotation_reply) {
           responseItem.id = messageEnd.id
           responseItem.annotation = ({
@@ -581,7 +616,6 @@ const Main: FC<IMainProps> = () => {
             },
           )
           setChatList(newListWithAnswer)
-          finishResponding()
           return
         }
         // not support show citation
@@ -595,9 +629,9 @@ const Main: FC<IMainProps> = () => {
           },
         )
         setChatList(newListWithAnswer)
-        finishResponding()
       },
       onMessageReplace: (messageReplace) => {
+        syncResponseConversationId(messageReplace.conversation_id)
         setChatList(produce(
           getChatList(),
           (draft) => {
@@ -614,7 +648,8 @@ const Main: FC<IMainProps> = () => {
           draft.splice(draft.findIndex(item => item.id === placeholderAnswerId), 1)
         }))
       },
-      onWorkflowStarted: ({ workflow_run_id, task_id }) => {
+      onWorkflowStarted: ({ workflow_run_id, task_id, conversation_id }) => {
+        syncResponseConversationId(conversation_id)
         // taskIdRef.current = task_id
         responseItem.workflow_run_id = workflow_run_id
         responseItem.workflowProcess = {

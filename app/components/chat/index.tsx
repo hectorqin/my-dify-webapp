@@ -64,7 +64,7 @@ const Chat: FC<IChatProps> = ({
   const chatListRef = useRef<HTMLDivElement>(null)
 
   const handleContentChange = (e: any) => {
-    const value = e.target.value
+    const value = e.target.value.replace(/[\r\n]+/g, ' ')
     setQuery(value)
     queryRef.current = value
   }
@@ -125,7 +125,7 @@ const Chat: FC<IChatProps> = ({
     }))
     const docAndOtherFiles: VisionFile[] = getProcessedFiles(attachmentFiles)
     const combinedFiles: VisionFile[] = [...imageFiles, ...docAndOtherFiles]
-    onSend(queryRef.current, combinedFiles)
+    onSend(queryRef.current.replace(/[\r\n]+/g, ' '), combinedFiles)
     if (!files.find(item => item.type === TransferMethod.local_file && !item.fileId)) {
       if (files.length) { onClear() }
       if (!isResponding) {
@@ -140,16 +140,13 @@ const Chat: FC<IChatProps> = ({
     if (e.code === 'Enter') {
       e.preventDefault()
       // prevent send message when using input method enter
-      if (!e.shiftKey && !isUseInputMethod.current) { handleSend() }
+      if (!isUseInputMethod.current) { handleSend() }
     }
   }
 
   const handleKeyDown = (e: any) => {
     isUseInputMethod.current = e.nativeEvent.isComposing
-    if (e.code === 'Enter' && !e.shiftKey) {
-      const result = query.replace(/\n$/, '')
-      setQuery(result)
-      queryRef.current = result
+    if (e.code === 'Enter') {
       e.preventDefault()
     }
   }

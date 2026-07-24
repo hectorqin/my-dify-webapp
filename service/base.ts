@@ -24,6 +24,7 @@ const baseOptions = {
 
 export interface WorkflowStartedResponse {
   task_id: string
+  conversation_id?: string
   workflow_run_id: string
   event: string
   data: {
@@ -36,6 +37,7 @@ export interface WorkflowStartedResponse {
 
 export interface WorkflowFinishedResponse {
   task_id: string
+  conversation_id?: string
   workflow_run_id: string
   event: string
   data: {
@@ -54,6 +56,7 @@ export interface WorkflowFinishedResponse {
 
 export interface NodeStartedResponse {
   task_id: string
+  conversation_id?: string
   workflow_run_id: string
   event: string
   data: {
@@ -70,6 +73,7 @@ export interface NodeStartedResponse {
 
 export interface NodeFinishedResponse {
   task_id: string
+  conversation_id?: string
   workflow_run_id: string
   event: string
   data: {
@@ -163,8 +167,6 @@ const handleStream = (
     let hasError = false
     reader?.read().then((result: any) => {
       if (result.done) {
-        debugger
-        console.log("done")
         onCompleted && onCompleted()
         return
       }
@@ -400,8 +402,8 @@ export const ssePost = (
           return
         }
         onData?.(str, isFirstMessage, moreInfo)
-      }, () => {
-        onCompleted?.()
+      }, (hasError?: boolean) => {
+        onCompleted?.(hasError)
       }, onThought, onMessageEnd, onMessageReplace, onFile, onWorkflowStarted, onWorkflowFinished, onNodeStarted, onNodeFinished)
     })
     .catch((e) => {

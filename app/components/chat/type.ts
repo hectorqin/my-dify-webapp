@@ -45,6 +45,7 @@ export interface ToolInfoInThought {
 
 export interface ThoughtItem {
   id: string
+  conversation_id?: string
   tool: string // plugin or dataset. May has multi.
   thought: string
   tool_input: string
@@ -105,6 +106,9 @@ export interface IChatItem {
 
 export interface MessageEnd {
   id: string
+  task_id?: string
+  message_id?: string
+  conversation_id?: string
   metadata: {
     retriever_resources?: CitationItem[]
     annotation_reply: {
